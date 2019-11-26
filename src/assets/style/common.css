@@ -1,0 +1,16 @@
+/*滚动条整体样式*/
+.LScroll::-webkit-scrollbar {
+    width: 2px;     /*高宽分别对应横竖滚动条的尺寸*/
+    height: 4px;
+}
+/*滚动条里面小方块*/
+.LScroll::-webkit-scrollbar-thumb {
+    border-radius: 100%;
+    height: 5px;
+    -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+    background: rgba(180,180,180,0.2);
+}
+/*滚动条里面轨道*/
+.LScroll::-webkit-scrollbar-track {
+    border-radius: 0;
+}
