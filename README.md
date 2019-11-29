@@ -2,23 +2,15 @@
 
 ## Project setup
 ```
+第一步
 yarn install
 ```
-
-### Compiles and hot-reloads for development
-```
+本地启动
 yarn serve
 ```
-
-### Compiles and minifies for production
+打包第一步
+yarn dll
 ```
+打包第二步
 yarn build
 ```
-
-### Lints and fixes files
-```
-yarn lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
