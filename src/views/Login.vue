@@ -10,7 +10,9 @@
     >
       <el-form style="display: inline-block;">
         <el-form-item>
-          <h1 style="color: #fff;">大屏管理系统 V1.0</h1>
+          <h1 style="color: #fff;">
+            <span>{{ title }}</span> <span class="version">{{ version }}</span>
+          </h1>
         </el-form-item>
         <el-form-item>
           <el-input v-model="username" placeholder="用户名"></el-input>
@@ -38,6 +40,8 @@ export default {
   },
   data() {
     return {
+      title: "大屏管理系统",
+      version: "V1.0",
       requestID: null,
       time: 0,
       speed: 5000,
@@ -64,6 +68,9 @@ export default {
       ]);
     }
     this.updateData();
+    setTimeout(() => {
+      this.version = "V2.0";
+    }, 3000);
   },
   methods: {
     updateData() {
@@ -131,5 +138,18 @@ export default {
 }
 .loginButton:hover {
   background-color: rgb(255, 115, 0);
+}
+.version {
+  /*width: 50%;*/
+  /*font-size: 35px;*/
+  text-align: right;
+  display: inline-block;
+  /*font-family: Agency FB;*/
+  font-weight: bolder;
+  background: linear-gradient(to bottom, #fff 0%, #00a6d8 90%, #56d6fb 100%);
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: currentColor;
+  text-fill-color: transparent;
 }
 </style>

@@ -6,6 +6,7 @@ import Login from "@/views/Login.vue";
 import HomePage from "@/components/iframes.vue";
 import Welcome from "@/views/Welcome.vue";
 import NotFound from "@/views/404.vue";
+import ThreeStorm from "@/views/cesium/Clean";
 // import store from '@/store'
 
 Vue.use(Router);
@@ -38,6 +39,11 @@ const router = new Router({
     {
       path: "/Login",
       name: "Login",
+      component: ThreeStorm
+    },
+    {
+      path: "/Logins",
+      name: "Logins",
       component: Login
     },
     {

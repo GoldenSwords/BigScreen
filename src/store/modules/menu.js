@@ -124,19 +124,19 @@ const Menu = {
       },
       {
         id: 14,
-        menuName: "短信记录",
+        menuName: "测试",
         icon: "",
-        path: "/MM",
-        component: "views/baseConfig/MenuConfig",
+        path: "/NumberAnimation",
+        component: "views/three/ThreePlane",
         type: 0,
         pid: 8
       },
       {
         id: 15,
-        menuName: "数据统计",
+        menuName: "数字滚动",
         icon: "",
         path: "/Bar",
-        component: "views/echarts/bar",
+        component: "views/demo/NumberAnimationBox",
         type: 0,
         pid: 8
       },

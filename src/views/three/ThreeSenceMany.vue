@@ -9,6 +9,8 @@ export default {
   name: "ThreeSenceMany",
   data() {
     return {
+      messMaterial: [],
+      messMesss: [],
       canvas: null,
       scenes: [],
       limit: 40,
@@ -27,12 +29,12 @@ export default {
   methods: {
     init() {
       this.canvas = this.$refs.canvas;
-      var geometries = [
-        new THREE.BoxBufferGeometry(1, 1, 1),
-        new THREE.SphereBufferGeometry(0.5, 12, 8),
-        new THREE.DodecahedronBufferGeometry(0.5),
-        new THREE.CylinderBufferGeometry(0.5, 0.5, 1, 12)
-      ];
+      var g1 = new THREE.BoxBufferGeometry(1, 1, 1);
+      var g2 = new THREE.SphereBufferGeometry(0.5, 12, 8);
+      var g3 = new THREE.DodecahedronBufferGeometry(0.5);
+      var g4 = new THREE.CylinderBufferGeometry(0.5, 0.5, 1, 12);
+      var geometries = [g1, g2, g3, g4];
+      this.messMesss.push(g1, g2, g3, g4);
       for (let i = 0; i < this.limit; i++) {
         var scene = new THREE.Scene();
         // make a list item
@@ -53,6 +55,7 @@ export default {
           metalness: 0,
           flatShading: true
         });
+        this.messMaterial.push(material);
         scene.add(new THREE.Mesh(geometry, material));
         scene.add(new THREE.HemisphereLight(0xaaaaaa, 0x444444));
         var light = new THREE.DirectionalLight(0xffffff, 0.5);
@@ -113,7 +116,6 @@ export default {
         var height = this.rect.h;
         var left = x * width;
         var bottom = y * height;
-        console.log(left, bottom, width, height);
         _this.renderer.setViewport(left, bottom, width, height);
         _this.renderer.setScissor(left, bottom, width, height);
         var camera = scene.userData.camera;
@@ -128,6 +130,22 @@ export default {
         }
       });
     }
+  },
+  beforeDestroy() {
+    window.cancelAnimationFrame(this.instanceId);
+    this.scenes.forEach(scene => {
+      scene.dispose();
+    });
+    this.messMaterial.forEach(scene => {
+      scene.dispose();
+    });
+    this.messMesss.forEach(scene => {
+      scene.dispose();
+    });
+    this.scenes.forEach(scene => {
+      scene.dispose();
+    });
+    this.renderer.dispose();
   }
 };
 </script>
