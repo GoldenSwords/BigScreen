@@ -39,12 +39,12 @@ const router = new Router({
     {
       path: "/Login",
       name: "Login",
-      component: ThreeStorm
+      component: Login
     },
     {
       path: "/Logins",
       name: "Logins",
-      component: Login
+      component: ThreeStorm
     },
     {
       path: "*",
