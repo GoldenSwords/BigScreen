@@ -1,7 +1,7 @@
 # bigscreen
 
 ## Project setup
-```
+
 ###必须
 
 yarn install
