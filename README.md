@@ -2,15 +2,19 @@
 
 ## Project setup
 ```
-第一步
+###必须
+
 yarn install
 ```
+
 本地启动
+
+```
 yarn serve
+
+打包
+
+
 ```
-打包第一步
 yarn dll
-```
-打包第二步
 yarn build
-```
