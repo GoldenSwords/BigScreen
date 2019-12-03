@@ -250,19 +250,19 @@ const Menu = {
       },
       {
         id: 27,
-        menuName: "黑名单",
+        menuName: "cesium",
         icon: "",
-        path: "/Bar",
-        component: "views/echarts/bar",
+        path: "/CesiumClean",
+        component: "views/cesium/Clean",
         type: 0,
-        pid: 8
+        pid: 4
       },
       {
         id: 28,
-        menuName: "黑名单",
+        menuName: "三维风暴",
         icon: "",
-        path: "/Bar",
-        component: "views/echarts/bar",
+        path: "/ThreeStorm",
+        component: "views/three/ThreeStorm",
         type: 0,
         pid: 8
       }

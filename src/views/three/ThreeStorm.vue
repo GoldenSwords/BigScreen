@@ -1,22 +1,49 @@
 <template>
-  <canvas
-    ref="canvas"
-    style="width: 100%;height: 100%;display: block;"
-  ></canvas>
+  <div style="width: 100%;height: 100%;display: block;">
+    <canvas
+      ref="canvas"
+      style="width: 100%;height: 100%;display: block;"
+    ></canvas>
+    <script type="x-shader/x-vertex" id="vertexshader">
+      attribute float size;
+      attribute vec3 customColor;
+      varying vec3 vColor;
+      void main() {
+      	vColor = customColor;
+      	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+      	gl_PointSize = size * ( 300.0 / -mvPosition.z );
+      	gl_Position = projectionMatrix * mvPosition;
+      }
+    </script>
+
+    <script type="x-shader/x-fragment" id="fragmentshader">
+      uniform vec3 color;
+      uniform sampler2D pointTexture;
+      varying vec3 vColor;
+      void main() {
+      	gl_FragColor = vec4( color * vColor, 1.0 );
+      	gl_FragColor = gl_FragColor * texture2D( pointTexture, gl_PointCoord );
+      }
+    </script>
+  </div>
 </template>
 
 <script>
 /**
  * 台风3D示例
  * */
+import { OrbitControls } from "../../../node_modules/three/examples/jsm/controls/OrbitControls";
 import * as THREE from "three";
 export default {
   name: "ThreeStorm",
   data() {
     return {
+      moveDirect: false,
+      png: require("@/assets/spark1.png"),
       flowIndex: 0,
       WIDTH: 0,
       HEIGHT: 0,
+      controls: null,
       group: null,
       instanceId: null,
       camera: null,
@@ -38,66 +65,47 @@ export default {
     };
   },
   mounted() {
-    this.init();
+    this.WIDTH = this.$refs.canvas.clientWidth;
+    this.HEIGHT = this.$refs.canvas.clientHeight;
+    const geometry = this.background();
+    const vertic = this.vertics(10000, 1000, geometry);
+    this.group.add(vertic);
+    this.animate(vertic);
   },
   methods: {
-    init() {
-      this.WIDTH = this.$refs.canvas.clientWidth;
-      this.HEIGHT = this.$refs.canvas.clientHeight;
-      this.camera = new THREE.OrthographicCamera(
-        -this.WIDTH / 2,
-        this.WIDTH / 2,
-        this.HEIGHT / 2,
-        -this.HEIGHT / 2,
-        -500,
-        500
+    background() {
+      // this.camera = new THREE.OrthographicCamera(
+      //   -1000,
+      //   1000,
+      //   1000,
+      //   -800,
+      //   -1000,
+      //   1000
+      // );
+      this.camera = new THREE.PerspectiveCamera(
+        40,
+        this.WIDTH / this.HEIGHT,
+        1,
+        10000
       );
+      this.camera.position.z = 2500;
       this.scene = new THREE.Scene();
-      this.camera.position.set(0, 0, 1);
       this.group = new THREE.Group();
-      const group = this.group;
-      group.add(this.light(350, -350, 500));
-      group.add(this.floor(700, 700, 10, "rgb(119, 119, 119)"));
-      group.add(
-        this.cylinder(312, -280, 10, { x: 20, y: 20, z: 40, color: "red" })
-      );
-      const path1 = this.curve(
-        new THREE.CatmullRomCurve3([
-          new THREE.Vector3(300, -280, 20),
-          new THREE.Vector3(282, -280, 20),
-          new THREE.Vector3(278, -280, 20),
-          new THREE.Vector3(260, -260, 20)
-        ]),
-        3,
-        "rgb(159, 254, 95)"
-      );
-      group.add(path1);
-      group.add(
-        this.sphere(260, -260, 20, {
-          x: 5,
-          y: 5,
-          z: 10,
-          color: "rgb(119, 119, 119)"
-        })
-      );
-      const path2 = this.curve(
-        new THREE.CatmullRomCurve3([
-          new THREE.Vector3(260, -260, 20),
-          new THREE.Vector3(230, -230, 20),
-          new THREE.Vector3(210, -260, 20)
-        ]),
-        3,
-        "rgb(159, 254, 95)"
-      );
-      group.add(path2);
-
-      group.add(
-        this.cylinder(202, -260, 10, { x: 20, y: 20, z: 40, color: "red" })
-      );
-      this.flowIndex = this.flowIndex >= 200 ? 0 : this.flowIndex + 1;
-      group.rotation.x = -(Math.PI / 180) * 70;
-      group.rotation.z = -(Math.PI / 180) * 30;
-      this.scene.add(group);
+      this.group.add(this.light(350, -350, 500));
+      const geometry = new THREE.BoxBufferGeometry(1500, 1000, 900);
+      const material = new THREE.LineBasicMaterial({
+        color: "red",
+        lineWidth: 10
+      });
+      const edges = new THREE.EdgesGeometry(geometry);
+      this.materials.push(geometry);
+      this.materials.push(edges);
+      this.geometrys.push(material);
+      const ls = new THREE.LineSegments(edges, material);
+      this.group.add(ls);
+      this.group.rotation.x = -(Math.PI / 180) * 75;
+      this.group.rotation.z = -(Math.PI / 180) * 30;
+      this.scene.add(this.group);
       this.renderer = new THREE.WebGLRenderer({
         antialias: true,
         canvas: this.$refs.canvas,
@@ -108,53 +116,65 @@ export default {
         this.$refs.canvas.clientWidth,
         this.$refs.canvas.clientHeight
       );
-      window.addEventListener("resize", this.onWindowResize, false);
-      this.animate();
+      this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+      // this.controls.mouseButtons = {
+      //   LEFT: THREE.MOUSE.ROTATE,
+      //   MIDDLE: THREE.MOUSE.DOLLY,
+      //   RIGHT: THREE.MOUSE.PAN
+      // }
+      return ls;
     },
-    cylinder(px, py, pz, { x, y, z, color }) {
-      const geometry = new THREE.CylinderBufferGeometry(x, y, z, 32);
-      const material = new THREE.MeshLambertMaterial({ color: color });
-      this.materials.push(material);
-      this.geometrys.push(geometry);
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.set(px, py, pz);
-      mesh.rotation.x = (Math.PI / 180) * 90;
-      const edges = new THREE.EdgesGeometry(geometry);
-      const lm = new THREE.LineBasicMaterial({
-        color: "rgba(255,100,0,.2)",
-        transparent: true,
-        opacity: 0.3
-      });
-      const line = new THREE.LineSegments(edges, lm);
-      line.position.set(px, py, pz);
-      line.rotation.x = (Math.PI / 180) * 90;
-      this.materials.push(lm);
-      this.geometrys.push(edges);
-      this.group.add(line);
-      return mesh;
-    },
-    sphere(px, py, pz, { x, y, z, color }) {
-      const geometry = new THREE.SphereBufferGeometry(x, y, z);
-      const material = new THREE.MeshLambertMaterial({ color: color });
-      this.materials.push(material);
-      this.geometrys.push(geometry);
+    vertics(amount, radius, obj) {
+      obj.geometry.computeBoundingBox();
+      var box = obj.geometry.boundingBox.clone();
+      const vertex = new THREE.Vector3(); //基础粒子对象
+      const color = new THREE.Color(0xffffff); //基础颜色对象
+      const positions = new Float32Array(amount * 3); //粒子矩阵
+      const colors = new Float32Array(amount * 3); //着色矩阵
+      const sizes = new Float32Array(amount); //
 
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.set(px, py, pz);
-      return mesh;
-    },
-    curve(path, radius, color) {
-      const geometry = new THREE.TubeBufferGeometry(
-        path,
-        100,
-        radius,
-        20,
-        false
+      for (var i = 0; i < amount; i++) {
+        vertex.x = (Math.random() * 2 - 1) * radius;
+        vertex.y = (Math.random() * 2 - 1) * radius;
+        vertex.z = (Math.random() * 2 - 1) * radius;
+        if (!box.containsPoint(vertex)) {
+          continue;
+        }
+        vertex.toArray(positions, i * 3);
+        if (vertex.x < 0) {
+          color.setHSL(0.5 + 0.1 * (i / amount), 0.7, 0.5);
+        } else {
+          color.setHSL(0.0 + 0.1 * (i / amount), 0.9, 0.5);
+        }
+        color.toArray(colors, i * 3);
+        sizes[i] = 100;
+      }
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(positions, 3)
       );
-      const material = new THREE.MeshLambertMaterial({ color: color });
-      this.materials.push(material);
-      this.geometrys.push(geometry);
-      return new THREE.Mesh(geometry, material);
+      geometry.setAttribute(
+        "customColor",
+        new THREE.BufferAttribute(colors, 3)
+      );
+      geometry.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
+      const material = new THREE.PointsMaterial({
+        vertexColors: true,
+        uniforms: {
+          color: { value: new THREE.Color("red") },
+          pointTexture: {
+            value: new THREE.TextureLoader().load(this.png)
+          }
+        },
+        vertexShader: document.getElementById("vertexshader").textContent,
+        fragmentShader: document.getElementById("fragmentshader").textContent,
+        blending: THREE.AdditiveBlending,
+        depthTest: false,
+        transparent: true
+      });
+      return new THREE.Points(geometry, material);
     },
     light(x, y, z) {
       const spotLight = new THREE.DirectionalLight(0xffffff);
@@ -169,10 +189,24 @@ export default {
       this.geometrys.push(material);
       return new THREE.Mesh(geometry, material);
     },
-    animate() {
+    animate(vertic) {
+      const position = vertic.position;
+      if (position.x <= 0) {
+        this.moveDirect = true;
+      } else if (position.x >= 350) {
+        this.moveDirect = false;
+      }
+      let x = 0;
+      if (this.moveDirect) {
+        x = 1;
+      } else {
+        x = -1;
+      }
+      vertic.translateX(x);
+      this.controls.update();
       this.renderer.render(this.scene, this.camera);
       this.instanceId = window.requestAnimationFrame(() => {
-        this.animate();
+        this.animate(vertic);
       });
     }
   },

@@ -3,19 +3,20 @@
 </template>
 
 <script>
+import CesiumControll from "@/plugins/cesium/CesiumControll";
 export default {
   name: "Clean",
+  data() {
+    return {
+      Tool: null
+    };
+  },
   mounted: function() {
     //设置静态资源目录
     // buildModuleUr l.setBaseUrl("../public/Cesium/");
-    //创建viewer实例
-    this.viewer = new this.$Viewer(this.$refs.cesiumContainer);
+    this.Tool = CesiumControll.instance(this.$refs.cesiumContainer);
   },
-  data() {
-    return {
-      viewer: {}
-    };
-  }
+  methods: {}
 };
 </script>
 

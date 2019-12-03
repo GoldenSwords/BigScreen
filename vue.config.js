@@ -82,14 +82,16 @@ module.exports = {
       })
     ],
     module: {
+      // unknownContextRegExp: /^.\/.*$/,
       unknownContextCritical: false
     }
   },
   chainWebpack: config => {
     config.resolve.alias
-      .set("@$", resolve("src"))
-      .set("node_modules", resolve("node_modules"))
-      .set("cesium", resolve("node_modules/cesium"));
+      .set("vue$", "vue/dist/vue.esm.js")
+      .set("@", resolve("src"))
+      .set("node_modules", path.resolve(__dirname, "./node_modules"))
+      .set("cesium", path.resolve(__dirname, "./node_modules/cesium/Source"));
     if (process.env.NODE_ENV === "production") {
       dllReference(config);
     }
