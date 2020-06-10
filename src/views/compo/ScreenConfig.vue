@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { registComponent } from "@/plugins/util/util";
+import { registerComp } from "@/plugins/util/util";
 import { componentsTemplateList } from "@/api/baseCompo";
 export default {
   name: "ScreenConfig",
@@ -48,18 +48,29 @@ export default {
         this.templateCompData = resp.data.msg;
         for (let i = 0; i < this.templateCompData.length; i++) {
           this.regist(this.templateCompData[i]);
+          registerComp(
+            this.templateCompData[i].code,
+            this.templateCompData[i].component,
+            resp => {
+              this.compsInstance.push({
+                name: this.templateCompData[i].code,
+                text: this.templateCompData[i].name,
+                comp: resp.default
+              });
+            }
+          );
         }
       });
-    },
-    regist(obj) {
-      registComponent(obj.code, obj.component).then(resp => {
-        this.compsInstance.push({
-          name: obj.code,
-          text: obj.name,
-          comp: resp.default
-        });
-      });
     }
+    // regist(obj) {
+    //   registComponent(obj.code, obj.component).then(resp => {
+    //     this.compsInstance.push({
+    //       name: obj.code,
+    //       text: obj.name,
+    //       comp: resp.default
+    //     });
+    //   });
+    // }
   }
 };
 </script>

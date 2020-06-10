@@ -8,7 +8,7 @@ import "leaflet/dist/leaflet.css";
 export default {
   name: "map",
   mounted() {
-    this._init();
+    this.initMap();
   },
   data() {
     return {
@@ -16,7 +16,7 @@ export default {
     };
   },
   methods: {
-    _init() {
+    initMap() {
       this.map = L.map(this.$refs.map, {
         center: [51.505, -0.09],
         zoom: 13

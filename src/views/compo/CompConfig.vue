@@ -54,7 +54,7 @@
                   style="width: 100%;height: 100%;position: absolute;z-index: 1;"
                   class="mask"
                 ></div>
-                <component :is="instanceComp"></component>
+                <component :is="instanceComp" :opt="detailTarget"></component>
               </div>
             </el-col>
             <el-col style="height: 100%;" :span="12">
@@ -75,38 +75,26 @@
         }}</template>
         <div :style="{ height: height + 'px' }">
           <el-row style="height: 100%;">
-            <el-col style="height: 100%;" :span="12">
-              <el-form>
-                <el-form-item>
-                  <el-select
-                    v-model="instanceObj.type"
-                    size="mini"
-                    placeholder="请选择"
-                    style="width: 100%;"
-                  >
-                    <el-option
-                      v-for="item in typeset"
-                      :key="item.value"
-                      :label="item.lable"
-                      :value="item.value"
-                    ></el-option>
-                  </el-select>
-                </el-form-item>
-                <el-form-item>
+            <el-col style="height: 100%;padding: 5px;" :span="12">
+              <el-form label-width="80px">
+                <el-form-item label="组件名称">
                   <el-input
                     v-model="instanceObj.name"
+                    size="mini"
                     placeholder="组件名称"
                   ></el-input>
                 </el-form-item>
-                <el-form-item>
+                <el-form-item label="组件路径">
                   <el-input
                     v-model="instanceObj.component"
+                    size="mini"
                     placeholder="组件路径 views/..."
                   ></el-input>
                 </el-form-item>
-                <el-form-item>
+                <el-form-item label="组件标识">
                   <el-input
                     v-model="instanceObj.code"
+                    size="mini"
                     placeholder="组件标识"
                   ></el-input>
                 </el-form-item>
@@ -142,13 +130,18 @@
 </template>
 
 <script>
-import { dateFormat, registComponent } from "@/plugins/util/util";
+import {
+  dateFormat,
+  registComponent,
+  formatKeyOption
+} from "@/plugins/util/util";
 import {
   PluginsDataList,
   componentsTemplateList,
   componentsTemplateDetail,
   getComponentBaseConfigTemplateList,
-  saveCompoTemplate
+  saveCompoTemplate,
+  getComponentConfigTemplateDetail
 } from "@/api/baseCompo";
 import CompoBaseConfigView from "@/views/compo/CompoBaseConfigView";
 export default {
@@ -156,7 +149,9 @@ export default {
   components: { CompoBaseConfigView },
   data() {
     return {
+      loading: false,
       model: "add",
+      configFormat: {},
       typeset: [
         { value: 0, lable: "面板" },
         { value: 1, lable: "组件" }
@@ -171,7 +166,6 @@ export default {
       configModal: false,
       search: "",
       dateFormat: null,
-      loading: false,
       instanceObj: {
         type: 0,
         component: null,
@@ -213,6 +207,29 @@ export default {
       });
       getComponentBaseConfigTemplateList().then(resp => {
         this.selectData.configDataList = resp.data.msg;
+      });
+    },
+    doFormatOption(compid) {
+      this.configFormat = {};
+      getComponentConfigTemplateDetail(JSON.stringify(compid)).then(resp => {
+        const configData = resp.data.msg;
+        const obj = {};
+        for (let i = 0; i < configData.length; i++) {
+          const data = formatKeyOption(
+            JSON.parse(JSON.stringify(configData[i]))
+          );
+          Object.keys(data).forEach(item => {
+            obj[item] = data[item];
+          });
+        }
+        this.configFormat = obj;
+
+        // const objC = this.compsInstance.find(item => {
+        //   return item.name === this.detailTarget.code;
+        // });
+        // if (objC && objC.comp && objC.comp.props) {
+        //   objC.comp.props.opt = this.configFormat;
+        // }
       });
     },
     save() {
@@ -265,6 +282,7 @@ export default {
     handleConfig(index, row) {
       componentsTemplateDetail(JSON.stringify(row)).then(resp => {
         this.detailTarget = resp.data.msg;
+        this.doFormatOption(resp.data.msg.id);
         this.configModal = true;
       });
     },
@@ -272,6 +290,7 @@ export default {
       this.model = "edit";
       componentsTemplateDetail(JSON.stringify(row)).then(resp => {
         this.detailTarget = resp.data.msg;
+        this.doFormatOption(resp.data.msg.id);
         for (const i in this.detailTarget) {
           this.instanceObj[i] = this.detailTarget[i];
         }
@@ -283,6 +302,7 @@ export default {
     clearModal() {
       this.viewComp.comp = null;
       this.detailTarget = {};
+      this.configFormat = {};
       this.instanceObj.type = 0;
       this.instanceObj.component = null;
       this.instanceObj.code = null;

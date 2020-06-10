@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import ContenerInner from "@/components/ContenerInner";
+import ContenerInner from "@/system/ContenerInner";
 export default {
   name: "RoleConfig",
   components: { ContenerInner }

@@ -3,15 +3,16 @@ import Router from "vue-router";
 import { getStore } from "@/plugins/util/store";
 // import store from '@/store'
 import Login from "@/views/Login.vue";
-import HomePage from "@/components/iframes.vue";
+import HomePage from "@/system/iframes.vue";
 import Welcome from "@/views/Welcome.vue";
 import NotFound from "@/views/404.vue";
 import ThreeStorm from "@/views/cesium/Clean";
+import DragPage from "@/components/DragPage";
 // import store from '@/store'
 
 Vue.use(Router);
 const router = new Router({
-  mode: "hash",
+  mode: "history",
   base: process.env.BASE_URL,
   routes: [
     {
@@ -47,16 +48,21 @@ const router = new Router({
       component: ThreeStorm
     },
     {
+      path: "/View",
+      name: "View",
+      component: DragPage
+    },
+    {
       path: "*",
       name: "/404",
       component: NotFound
     }
   ]
 });
+const access = ["/", "/Login", "/View"];
 router.beforeEach((to, from, next) => {
-  to.fullPath === "/"
-    ? next()
-    : to.fullPath === "/Login"
+  console.log(to.fullPath);
+  access.includes(to.fullPath)
     ? next()
     : getStore({ name: "login" })
     ? next()

@@ -73,6 +73,12 @@ export default ({ mock }) => {
   Mock.mock("/getComponentConfigTemplateDetail", "get", opt => {
     return store.getters.getComponentConfigTemplateDetail(JSON.parse(opt.body));
   });
+  //配置项模板详情
+  Mock.mock("/getComponentConfigTemplateDetailByConfigId", "get", opt => {
+    return store.getters.getComponentConfigTemplateDetailByConfigId(
+      JSON.parse(opt.body)
+    );
+  });
   //更新配置项模板
   Mock.mock("/updateComponentConfigTemplate", "get", opt => {
     return store.getters.updateComponentConfigTemplate(JSON.parse(opt.body));
@@ -88,5 +94,13 @@ export default ({ mock }) => {
   //插件列表
   Mock.mock("/PluginsDataList", "get", opt => {
     return store.getters.PluginsDataList(JSON.parse(opt.body));
+  });
+  //插件列表
+  Mock.mock("/PluginsDataDetailById", "get", opt => {
+    return store.getters.PluginsDataDetailById(JSON.parse(opt.body));
+  });
+  //插件列表
+  Mock.mock("/PluginsDataDetailByCompId", "get", opt => {
+    return store.getters.PluginsDataDetailByCompId(JSON.parse(opt.body));
   });
 };

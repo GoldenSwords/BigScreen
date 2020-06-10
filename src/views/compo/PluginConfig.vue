@@ -51,7 +51,9 @@ export default {
   name: "PluginConfig",
   data() {
     return {
-      tableData: []
+      loading: false,
+      tableData: [],
+      search: ""
     };
   },
   beforeMount() {

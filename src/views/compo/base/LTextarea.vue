@@ -1,5 +1,6 @@
 <template>
   <el-input
+    style="width: 100%;"
     v-model="number"
     autosize
     :disabled="disabled"
@@ -15,7 +16,8 @@ export default {
   name: "LTextarea",
   props: {
     value: Object,
-    disabled: Boolean
+    disabled: Boolean,
+    option: Object
   },
   data() {
     return {

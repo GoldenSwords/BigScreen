@@ -4,7 +4,7 @@ import User from "@/store/modules/user";
 import Base from "@/store/modules/base";
 import Menu from "@/store/modules/menu";
 import Login from "@/store/modules/login";
-import Components from "@/store/modules/components";
+import Session from "@/store/modules/Session";
 Vue.use(Vuex);
 
 const store = new Vuex.Store({
@@ -13,7 +13,7 @@ const store = new Vuex.Store({
     User,
     Menu,
     Login,
-    Components
+    Session
   }
 });
 

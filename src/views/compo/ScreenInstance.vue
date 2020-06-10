@@ -1,212 +1,294 @@
 <template>
   <el-container style="width: 100%;height: 100%;">
     <el-main style="width: 100%;height: 100%;">
-      <div style="width: 100%;height: 100%;position: relative;">
+      <div
+        class="LScroll"
+        ref="main"
+        style="width: 100%;height: 100%;position: relative;"
+      >
         <div
-          ref="clickDom"
-          class="pageBox"
-          style="width: 100%;height: 100%;"
-          @click="manageScreen"
-          @contextmenu.prevent="contextmenu"
+          style="width: 100%;height: 100%;position: absolute;"
+          :style="{
+            width: configDataInstance.Option.width + 'px',
+            height: configDataInstance.Option.height + 'px',
+            backgroundColor: configDataInstance.Option.color,
+            transform:
+              'scale(' + rootWidth / configDataInstance.Option.width + ')',
+            transformOrigin: '0 0'
+          }"
         >
-          <span
-            v-show="sliderShow"
-            class="panelBorder"
-            @click="sliderShow = false"
-            style="position: absolute;z-index: 10;"
-            :style="{
-              left: left + 'px',
-              top: top + 'px'
-            }"
+          <div
+            ref="root"
+            class="pageBox"
+            style="width: 100%;height: 100%;"
+            @click="rootClick"
+            @contextmenu.prevent="showAddPanelBox"
           >
-            <ul class="panelBox">
-              <li
-                v-for="item in panelTemplateData"
-                :key="item.id"
-                @click="addPanel(item)"
+            <span
+              v-show="sliderShow"
+              class="panelBorder"
+              @click="sliderShow = false"
+              style="position: absolute;z-index: 10;"
+              :style="{
+                left: position.x + 'px',
+                top: position.y + 'px'
+              }"
+            >
+              <ul class="panelBox">
+                <li v-for="item in sliderData" :key="item.id">
+                  <div
+                    v-for="(ite, idx) in item"
+                    :key="idx + '_qtx'"
+                    @click.stop.prevent="sliderClick(ite)"
+                  >
+                    {{ ite.name }}
+                  </div>
+                </li>
+              </ul>
+            </span>
+            <template v-for="item in activeComponents">
+              <component-view
+                ref="comps"
+                :comp="item.compInstance"
+                :obj="item.obj"
+                :option="item.option"
+                :optionformat="doFormatKeyOption(item.option)"
+                :uuid="item._uuid"
+                :key="item._uuid"
+                @clickCallback="compClick"
+                @contextmenuCallback="showAddPanelBox"
               >
-                {{ item.name }}
-              </li>
-            </ul>
-          </span>
-          <template v-for="item in activeComponents">
-            <component
-              ref="comps"
-              :is="item.comp"
-              :opt="item"
-              :key="item._uuid"
-              @silent="silent"
-              @onmanage="manage"
-            ></component>
-          </template>
-        </div>
-        <div
-          v-show="drawer"
-          style="width: 260px;height: 100%;position: absolute;right: 0;top: 0;z-index: 50;    background-color: rgba(0, 0, 0,.2);color: #fff;border-left: 2px solid rgba(255,255,255,.2);"
-        >
-          <h1>{{ configData.name }}</h1>
-          <template v-for="item in activeConfigs">
-            <el-row :key="item._uuid">
-              <el-col :span="12" style="text-align: right;padding: 0 10px;">
-                {{ item.obj.name }}
-              </el-col>
-              <el-col :span="12">
-                <component
-                  :is="item.comp"
-                  :value="item.obj.model"
-                  :obj="item"
-                  @callback="configCallback"
-                ></component>
-              </el-col>
-            </el-row>
-          </template>
+              </component-view>
+            </template>
+          </div>
         </div>
       </div>
     </el-main>
+    <el-aside style="width: 20%;" class="LScroll">
+      <config-view @callback="callback"></config-view>
+    </el-aside>
   </el-container>
 </template>
 
 <script>
-import { generateUUID, registComponent } from "@/plugins/util/util";
+import event from "@/plugins/event";
 import {
-  getPanelTemplateList,
-  componentsTemplateDetail,
+  generateUUID,
+  registerComp,
+  formatKeyOption
+} from "@/plugins/util/util";
+import {
+  getCompoTempList,
   getComponentConfigTemplateDetail
+  // componentsTemplateDetail
+  // componentsTemplateDetail,
+  // getComponentConfigTemplateDetail
 } from "@/api/baseCompo";
+import ComponentView from "@/views/compo/components/ComponetView";
+import ConfigView from "@/views/compo/components/ConfigView";
 export default {
   name: "ScreenInstance",
-  components: {},
+  components: { ComponentView, ConfigView },
   data() {
     return {
-      configData: {},
-      drawer: false,
-      top: 0,
-      left: 0,
+      targetComp: null,
+      rootWidth: 0,
+      drawer: false, //管理项面板
+      activeTarget: null,
+      position: {
+        //菜单位置
+        x: 0,
+        y: 0
+      },
+      configDataInstance: {
+        Option: {
+          width: 0,
+          height: 0,
+          color: ""
+        }
+      },
+      configData: {}, // 基础配置项
       silentEvent: false,
-      sliderShow: false,
-      panelTemplateData: [],
-      compoTemplateData: [],
-      activeComponents: [],
-      activeConfigs: []
+      sliderShow: false, //右键菜单
+      sliderData: [],
+      operationData: [
+        [
+          { id: 0, name: "置顶" },
+          { id: 1, name: "置底" },
+          { id: 2, name: "上移一层" },
+          { id: 3, name: "下移一层" }
+        ],
+        [
+          { id: 4, name: "删除" },
+          { id: 5, name: "复制" }
+        ]
+      ],
+      panelTemplateData: [], //模板列表
+      activeComponents: [], // 激活的组件
+      registComponentList: [], //注册的组件列表
+      activeConfigs: [] //当前激活组件的配置项
     };
   },
-  watch: {
-    configData(val) {
-      this.activeConfigs.splice(0, this.activeConfigs.length);
-      if (val && val.configRoot.child) {
-        for (let i = 0; i < val.configRoot.child.length; i++) {
-          this.regist(
-            val.configRoot.child[i].code,
-            val.configRoot.child[i].component,
-            val.configRoot.child[i]
-          );
-        }
-      }
-    }
-  },
+  watch: {},
   beforeMount() {
     this.getData();
   },
+  mounted() {
+    this.rootWidth = this.$refs.main.clientWidth;
+  },
   methods: {
-    configCallback(val, obj) {
-      let actives = null;
-      this.activeConfigs.forEach(item => {
-        if (item === obj) {
-          item.obj.model = val;
-          actives = item;
-        }
-      });
-      this.activeComponents.forEach(item => {
-        if (item === this.configData) {
-          console.log(
-            this.configData.configRoot.key,
-            item.config[this.configData.configRoot.key]
-          );
-          item.config[this.configData.configRoot.key][actives.obj.key] =
-            actives.obj.model;
-          // console.log(item, this.configData, actives);
-        }
-      });
-    },
-    regist(name, component, obj) {
-      registComponent(name, component).then(resp => {
-        this.activeConfigs.push({
-          name: name,
-          obj: obj,
-          comp: resp.default,
-          _uuid: generateUUID()
-        });
-      });
-    },
-    addPanel(item) {
-      componentsTemplateDetail(JSON.stringify(item)).then(resp => {
-        if (resp.config) {
-          getComponentConfigTemplateDetail(
-            JSON.stringify(resp.data.msg.config.configId)
-          ).then(data => {
-            registComponent(item.code, item.component).then(result => {
-              this.activeComponents.push({
-                name: resp.data.msg.code,
-                comp: result.default,
-                config: this.formatterKeyValue(data.data.msg),
-                configRoot: data.data.msg,
-                _uuid: generateUUID()
-              });
-            });
+    doFormatKeyOption(keys) {
+      const obj = {};
+      if (keys) {
+        for (let i = 0; i < keys.length; i++) {
+          const data = formatKeyOption(JSON.parse(JSON.stringify(keys[i])));
+          Object.keys(data).forEach(item => {
+            obj[item] = data[item];
           });
         }
-      });
-    },
-    formatterKeyValue(config) {
-      const result = {};
-      const column = "key";
-      const keys = "model";
-      if (config.child) {
-        config.child.forEach(item => {
-          result[item[column]] = item[keys];
-        });
-        const data = {};
-        data[config[column]] = result;
-        return data;
       }
-      return {};
+      return obj;
     },
-    getData() {
-      getPanelTemplateList().then(resp => {
-        this.panelTemplateData = resp.data.msg;
+    callback(val, uuid) {
+      console.log(uuid);
+      const has = val.find(item => {
+        return item.id === 0;
       });
-    },
-    // 大屏配置
-    manageScreen(e) {
-      if (this.configData.name && e.target !== this.$refs.clickDom) {
-        this.drawer = true;
+      if (has) {
+        this.configDataInstance = formatKeyOption(has);
       } else {
-        this.drawer = false;
+        const obj = this.activeComponents.find(item => {
+          return item._uuid === uuid;
+        });
+        obj.option = val;
+        obj.optionformat = this.doFormatKeyOption(val);
       }
-      this.silent();
     },
-    //    添加面板
-    contextmenu(e) {
-      if (e.target !== this.$refs.clickDom) {
-        return;
-      }
+    sliderClick(item) {
       this.silent();
-      this.left = e.layerX;
-      this.top = e.layerY;
+      this.addComponent(item);
+    },
+    //添加组件
+    addComponent(item) {
+      const compObj = this.registComponentList.find(comp => {
+        return comp.name === item.code;
+      });
+      const dataObj = this.panelTemplateData.find(data => {
+        return data.code === item.code;
+      });
+      getComponentConfigTemplateDetail(JSON.stringify(dataObj.id)).then(
+        resp => {
+          const uuid = generateUUID();
+          this.activeComponents.push({
+            option: resp.data.msg,
+            obj: JSON.parse(JSON.stringify(dataObj)),
+            compInstance: compObj.comp,
+            _uuid: uuid
+          });
+          event.$emit(
+            "updateConfig",
+            undefined,
+            this.configData,
+            undefined,
+            "root"
+          );
+        }
+      );
+    },
+    //初始化组件数据
+    getData() {
+      getComponentConfigTemplateDetail("0").then(resp => {
+        this.configData = resp.data.msg;
+        const obj = {};
+        for (let i = 0; i < this.configData.length; i++) {
+          const data = formatKeyOption(
+            JSON.parse(JSON.stringify(this.configData[i]))
+          );
+          Object.keys(data).forEach(item => {
+            obj[item] = data[item];
+          });
+        }
+        this.configDataInstance = obj;
+        event.$emit(
+          "updateConfig",
+          undefined,
+          this.configData,
+          undefined,
+          "root"
+        );
+      });
+      getCompoTempList().then(resp => {
+        this.panelTemplateData = resp.data.msg;
+        this.sliderData = [resp.data.msg];
+        this.panelTemplateData.forEach(item => {
+          registerComp(item.code, item.component, result => {
+            //TODO 追加配置项 扩展项
+            this.registComponentList.push({
+              name: item.code,
+              comp: result.default,
+              config: "",
+              plugin: ""
+            });
+          });
+        });
+      });
+    },
+    //右键面板
+    showAddPanelBox(e, option, activeTarget) {
+      this.activeTarget = activeTarget;
+      this.silent();
+      this.position.x = e.offsetX;
+      this.position.y = e.offsetY;
+      if (!activeTarget) {
+        this.sliderData = [this.panelTemplateData];
+      } else {
+        this.sliderData = this.operationData;
+      }
       this.sliderShow = true;
+      return false;
     },
-    manage(item) {
-      console.log(item);
-      this.configData = item;
+    //显示管理项
+    showManage() {
       this.drawer = true;
     },
+    compClick(e, option, activeTarget) {
+      this.activeTarget = activeTarget;
+      const qt = this.activeComponents.find(item => {
+        return item.compInstance === activeTarget;
+      });
+      this.silent();
+      event.$emit("updateConfig", qt.obj.id, option, qt._uuid, "compo");
+      return false;
+    },
+    rootClick(e) {
+      this.activeTarget = null;
+      this.silent(e);
+      this.drawer = true;
+      getComponentConfigTemplateDetail("0").then(resp => {
+        this.configData = resp.data.msg;
+        const obj = {};
+        for (let i = 0; i < this.configData.length; i++) {
+          const data = formatKeyOption(
+            JSON.parse(JSON.stringify(this.configData[i]))
+          );
+          Object.keys(data).forEach(item => {
+            obj[item] = data[item];
+          });
+        }
+        this.configDataInstance = obj;
+        event.$emit(
+          "updateConfig",
+          undefined,
+          this.configData,
+          undefined,
+          "root"
+        );
+      });
+      return false;
+    },
+    //关闭组件选择
     silent() {
       this.sliderShow = false;
-      if (this.$refs.comps) {
-        this.$refs.comps.forEach(item => {
-          item.silent();
-        });
-      }
     }
   }
 };
@@ -215,7 +297,7 @@ export default {
 <style scoped>
 .pageBox {
   position: relative;
-  background-color: rgb(5, 5, 39);
+  /*background-color: rgb(5, 5, 39);*/
   background-image: linear-gradient(
       90deg,
       rgba(180, 180, 180, 0.15) 10%,
@@ -225,7 +307,7 @@ export default {
   background-size: 20px 20px;
 }
 .panelBorder {
-  background-color: rgb(4, 4, 4);
+  background-color: rgb(48, 54, 64);
   padding: 5px;
   border-radius: 4px;
   color: #fff;
@@ -242,9 +324,9 @@ export default {
 }
 .panelBox li {
   cursor: pointer;
-  border-top: 1px solid #6f6f6f;
+  border-top: 2px solid rgb(58, 70, 89);
 }
-.panelBox li:hover {
+.panelBox li div:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
 .panelBox li:first-child {

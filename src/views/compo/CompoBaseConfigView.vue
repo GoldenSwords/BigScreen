@@ -1,30 +1,14 @@
 <template>
   <el-container style="width: 100%;height: 100%;">
     <el-main style="width: 100%;height: 100%;">
-      <el-row ref="row" style="height: 30px;line-height: 30px;">
-        <el-col :span="4">类型</el-col>
-        <el-col :span="20">
-          <el-select
-            v-model="typevalue"
-            size="mini"
-            placeholder="请选择"
-            style="width: 100%;"
-          >
-            <el-option
-              v-for="item in typeset"
-              :key="item.value"
-              :label="item.lable"
-              :value="item.value"
-            ></el-option>
-          </el-select>
-        </el-col>
-      </el-row>
-      <el-row ref="row" style="height: 30px;line-height: 30px;">
+      <el-row style="height: 30px;line-height: 30px;">
         <el-col :span="4">配置项</el-col>
         <el-col :span="20">
           <el-select
             v-model="select"
             size="mini"
+            multiple
+            collapse-tags
             placeholder="请选择"
             style="width: 100%;"
           >
@@ -40,30 +24,22 @@
       <el-row style="height: calc(100% - 90px);overflow: auto;" class="LScroll">
         <el-col :span="4">扩展项</el-col>
         <el-col :span="20">
-          <div v-for="(item, idx) in pluginData" :key="idx">
-            <el-select
-              v-model="item.code"
-              size="mini"
-              placeholder="请选择"
-              style="width: 100%;"
-              @change="pluginChange"
-            >
-              <el-option
-                v-for="item in plugins"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              ></el-option>
-            </el-select>
-          </div>
-          <div>
-            <el-button
-              style="width: 100%;padding-right:30px;"
-              icon="el-icon-circle-plus"
-              size="mini"
-              @click="addPlugin"
-            ></el-button>
-          </div>
+          <el-select
+            v-model="pluginData"
+            size="mini"
+            multiple
+            collapse-tags
+            placeholder="请选择"
+            style="width: 100%;"
+            @change="pluginChange"
+          >
+            <el-option
+              v-for="item in plugins"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            ></el-option>
+          </el-select>
         </el-col>
       </el-row>
       <el-row style="height: 30px;line-height: 30px;text-align: center;">
@@ -102,8 +78,8 @@ export default {
       //   { id: 2, name: "扩展2" },
       //   { id: 3, name: "扩展3" }
       // ],
-      lineHeight: 0,
-      select: null,
+      lineHeight: 30,
+      select: [],
       compsDataList: [],
       selectData: [],
       configTemp: {}
@@ -114,44 +90,45 @@ export default {
       this.pluginData.splice(0, this.pluginData.length);
       this.configTemp = JSON.parse(JSON.stringify(this.config));
       this.typevalue = this.configTemp.type;
-      if (val.config) {
-        this.select = val.config.configId;
-      } else {
-        this.select = null;
-        this.selectData.splice(0, this.selectData.length);
-      }
+      this.select = val.config ? val.config : [];
+      this.config.plugin.forEach(plugin => {
+        this.pluginData.push(
+          this.plugins.find(item => {
+            return item.id === plugin;
+          }).id
+        );
+      });
     }
   },
   computed: {},
   created() {},
   beforeMount() {
-    this.pluginData.splice(0, this.pluginData.length);
     this.configTemp = JSON.parse(JSON.stringify(this.config));
-    if (this.configTemp.config) {
-      this.select = this.configTemp.config.configId;
-    }
+    this.select = this.configTemp.config ? this.configTemp.config : [];
     this.typevalue = this.configTemp.type;
     BaseCompoList().then(resp => {
       this.compsDataList = resp.data.msg;
     });
+    this.config.plugin.forEach(plugin => {
+      this.pluginData.push(
+        this.plugins.find(item => {
+          return item.id === plugin;
+        }).id
+      );
+    });
   },
-  mounted() {
-    this.lineHeight = this.$refs.row.clientHeight;
-  },
+  mounted() {},
   methods: {
     clearForm() {
-      this.select = null;
+      this.select.splice(0, this.select.length);
       this.pluginData.splice(0, this.pluginData.length);
       this.$emit("close");
     },
     saveConfig() {
-      this.configTemp.config = this.configTemp.config
-        ? this.configTemp.config
-        : {};
       this.configTemp.type = this.typevalue;
       this.configTemp.plugin = this.pluginData;
-      this.configTemp.config.configId = this.select;
-      saveCompoTemplate(this.configTemp);
+      this.configTemp.config = this.select;
+      saveCompoTemplate(JSON.stringify(this.configTemp));
       this.clearForm();
     },
     pluginChange(val) {
@@ -162,11 +139,11 @@ export default {
         }
       });
       if (count > 1) {
-        this.$message("扩展项已存在");
+        this.$message({
+          message: "扩展项重复配置",
+          type: "warning"
+        });
       }
-    },
-    addPlugin() {
-      this.pluginData.push({});
     },
     // 配置项回调函数
     callback() {},

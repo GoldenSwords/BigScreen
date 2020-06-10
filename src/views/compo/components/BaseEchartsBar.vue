@@ -8,7 +8,7 @@ export default {
   data() {
     return {
       baseOption: {
-        backgroundColor: "#013954",
+        // backgroundColor: "#013954",
         xAxis: {
           type: "category",
           data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -31,6 +31,7 @@ export default {
     this.renderMap();
   },
   methods: {
+    updateComponent() {},
     renderMap() {
       this.chart.setOption(this.baseOption);
     }

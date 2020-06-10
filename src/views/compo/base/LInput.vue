@@ -1,5 +1,6 @@
 <template>
   <el-input
+    style="width: 100%;"
     v-model="number"
     :disabled="disabled"
     @change="change"
@@ -13,7 +14,8 @@ export default {
   name: "LInput",
   props: {
     value: String,
-    disabled: Boolean
+    disabled: Boolean,
+    option: Object
   },
   data() {
     return {

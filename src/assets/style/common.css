@@ -1,4 +1,7 @@
 /*滚动条整体样式*/
+.LScroll{
+    overflow: auto;
+}
 .LScroll::-webkit-scrollbar {
     width: 2px;     /*高宽分别对应横竖滚动条的尺寸*/
     height: 4px;

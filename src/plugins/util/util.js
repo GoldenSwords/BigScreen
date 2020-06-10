@@ -20,6 +20,36 @@ export function validatenull(val) {
   }
   return false;
 }
+export const loadScript = (url, callback) => {
+  var script = document.createElement("script");
+  script.type = "text/javascript";
+  if (script.readyState) {
+    //IE
+    script.onreadystatechange = function() {
+      if (script.readyState == "loaded" || script.readyState == "complete") {
+        script.onreadystatechange = null;
+        callback();
+      }
+    };
+  } else {
+    //Others
+    script.onload = function() {
+      callback();
+    };
+  }
+  script.src = url;
+  document.getElementsByTagName("head")[0].appendChild(script);
+};
+export const formatKeyOption = option => {
+  const result = {};
+  result[option.key] = {};
+  if (option.child) {
+    option.child.forEach(item => {
+      result[option.key][item.key] = item.model;
+    });
+  }
+  return result;
+};
 
 export const formatRoutes = data => {
   let aRouter = [];
@@ -29,7 +59,7 @@ export const formatRoutes = data => {
       const oRouter = {
         path: path || "",
         component(resolve) {
-          require([`@/components/iframes.vue`], resolve, function() {
+          require([`@/system/iframes.vue`], resolve, function() {
             require([`@/views/404.vue`], resolve);
           });
         },
@@ -49,9 +79,9 @@ export const formatRoutes = data => {
         component(resolve) {
           require([
             component === "Root"
-              ? "@/components/iframes"
+              ? "@/system/iframes"
               : component === "Layout"
-              ? "@/components/ContenerFullScreen"
+              ? "@/system/ContenerFullScreen"
               : `@/${component}.vue`
           ], resolve, function() {
             require([`@/views/404.vue`], resolve);
@@ -104,15 +134,15 @@ export function makeTree(data, id, pid, childColumn) {
 }
 
 export function registComponent(name, source) {
-  // return require(`@/${source}.vue`).then((component) => {
-  //   return Vue.component(name, component)
-  // })
-  // return Vue.component(name, `@/${source}.vue`)
   return Vue.component(name, import("@/" + source));
 }
 
-export function registerComp(path) {
-  return import("@/" + path);
+export function registerComp(name, source, callback) {
+  if (typeof callback === "function") {
+    Vue.component(name, import("@/" + source)).then(resp => {
+      callback(resp);
+    });
+  }
 }
 
 export function generateUUID() {

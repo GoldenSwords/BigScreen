@@ -1,5 +1,6 @@
 <template>
   <el-input-number
+    style="width: 100%;"
     v-model="number"
     :disabled="disabled"
     @change="change"
@@ -14,7 +15,7 @@ export default {
   props: {
     value: Number,
     disabled: Boolean,
-    obj: Object
+    option: Object
   },
   data() {
     return {
@@ -28,7 +29,7 @@ export default {
   mounted() {},
   methods: {
     change(val) {
-      this.$emit("callback", val, this.obj);
+      this.$emit("callback", val);
     }
   }
 };

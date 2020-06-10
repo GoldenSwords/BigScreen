@@ -1,9 +1,9 @@
 <template>
   <el-row style="padding: 5px 0">
     <template v-if="!use">
-      <el-col :span="10" style="text-align: center;">
+      <el-col :span="8" style="text-align: center;">
         <component
-          :is="item.code"
+          :is="instanceComp"
           :disabled="config.disabled"
           :value="item.model"
           @callback="callback"
@@ -25,13 +25,19 @@
           size="mini"
         ></el-input>
       </el-col>
-      <el-col :span="4">
+      <el-col :span="6">
         <el-button-group>
           <el-button
             @click="doDisable"
             type="primary"
             size="mini"
             icon="el-icon-lock"
+          ></el-button>
+          <el-button
+            @click="doEdit"
+            type="success"
+            size="mini"
+            icon="el-icon-edit"
           ></el-button>
           <el-button
             @click="doDelete"
@@ -43,18 +49,12 @@
       </el-col>
     </template>
     <template v-else>
-      <el-col :span="12">
-        <el-input
-          :disabled="use"
-          v-model="config.name"
-          @change="doUpdate"
-          placeholder="名称"
-          size="mini"
-        ></el-input>
+      <el-col :span="8">
+        {{ config.name }}
       </el-col>
-      <el-col :span="12">
+      <el-col :span="16">
         <component
-          :is="item.code"
+          :is="instanceComp"
           :disabled="config.disabled"
           :value="item.model"
           @callback="callback"
@@ -65,13 +65,15 @@
 </template>
 
 <script>
-const compss = (function(arr) {
-  let components = {};
-  arr.forEach(layer => {
-    components[layer] = () => import("@/views/compo/base/" + layer + ".vue");
-  });
-  return components;
-})(["LInput", "LNumber", "LTextarea", "LColor"]);
+// const compss = (function(arr) {
+//   let components = {};
+//   arr.forEach(layer => {
+//     components[layer] = () => import("@/views/compo/base/" + layer + ".vue");
+//   });
+//   return components;
+// })(["LInput", "LNumber", "LTextarea", "LColor", "LSelect"]);
+import { registerComp } from "@/plugins/util/util";
+// import {BaseTypeList} from "@/api/baseCompo"
 export default {
   name: "LView",
   props: {
@@ -89,18 +91,24 @@ export default {
         type: "Number",
         code: "LInput",
         compId: 1
-      }
+      },
+      instanceComp: null,
+      compList: []
     };
   },
   beforeMount() {
     this.config = JSON.parse(JSON.stringify(this.item));
+    registerComp(this.item.code, this.item.component, item => {
+      this.instanceComp = item.default;
+    });
   },
-  components: { ...compss },
+  // components: { ...compss },
   methods: {
     callback(val) {
       this.config.model = val;
       this.doUpdate();
     },
+    doEdit() {},
     doUpdate() {
       if (
         this.config.name &&
@@ -113,8 +121,8 @@ export default {
           key: this.config.key,
           model: this.config.model,
           disabled: this.config.disabled,
-          _uuid: this.config._uuid
-          // id: this.config.id
+          _uuid: this.config._uuid,
+          id: this.config.id
         });
       }
     },

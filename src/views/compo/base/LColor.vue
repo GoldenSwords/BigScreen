@@ -14,7 +14,7 @@ export default {
   props: {
     value: String,
     disabled: Boolean,
-    obj: Object
+    option: Object
   },
   watch: {},
   beforeMount() {
@@ -23,7 +23,7 @@ export default {
   mounted() {},
   methods: {
     change(val) {
-      this.$emit("callback", val, this.obj);
+      this.$emit("callback", val);
     }
   },
   data() {

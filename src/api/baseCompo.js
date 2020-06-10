@@ -61,6 +61,11 @@ export const getComponentConfigTemplateDetail = opt => {
   return axios.get("/getComponentConfigTemplateDetail", {
     data: opt
   });
+}; //配置项模板详情
+export const getComponentConfigTemplateDetailByConfigId = opt => {
+  return axios.get("/getComponentConfigTemplateDetailByConfigId", {
+    data: opt
+  });
 };
 //删除配置项模板
 export const delComponentConfigTemplate = opt => {
@@ -107,6 +112,18 @@ export const getPanelTemplateList = opt => {
 //插件列表
 export const PluginsDataList = opt => {
   return axios.get("/PluginsDataList", {
+    data: opt
+  });
+};
+//插件列表
+export const PluginsDataDetailById = opt => {
+  return axios.get("/PluginsDataDetailById", {
+    data: opt
+  });
+};
+//插件列表
+export const PluginsDataDetailByCompId = opt => {
+  return axios.get("/PluginsDataDetailByCompId", {
     data: opt
   });
 };

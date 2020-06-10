@@ -9,7 +9,7 @@ export default {
   data() {
     return {
       baseOption: {
-        backgroundColor: "#013954",
+        // backgroundColor: "#013954",
         geo: {
           map: "china",
           zoom: 1.2,
@@ -40,8 +40,17 @@ export default {
     this.renderMap();
   },
   methods: {
+    updateComponent() {
+      this.renderMap();
+    },
     renderMap() {
+      console.log(1);
+      if (this.chart) {
+        this.chart.dispose();
+        this.chart = this.$echarts.init(this.$refs.map);
+      }
       this.chart.setOption(this.baseOption);
+      this.chart.resize();
     }
   }
 };

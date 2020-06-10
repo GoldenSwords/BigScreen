@@ -76,6 +76,7 @@
         </el-row>
         <template v-for="item in selectData">
           <l-view
+            v-if="item"
             :item="item"
             :key="item._uuid ? item._uuid : item.id"
             @delele="delConfig"
@@ -84,16 +85,21 @@
         </template>
         <div slot="footer" style="text-align: center;">
           <el-button-group>
-            <el-button v-if="operation === 'add'" type="primary" @click="save"
+            <el-button
+              v-if="operation === 'add'"
+              type="primary"
+              size="mini"
+              @click="save"
               >提交</el-button
             >
             <el-button
               v-if="operation !== 'add'"
               type="success"
+              size="mini"
               @click="handleUpdate"
               >修改</el-button
             >
-            <el-button @click="clearForm">取消</el-button>
+            <el-button @click="clearForm" size="mini">取消</el-button>
           </el-button-group>
         </div>
       </el-dialog>
@@ -108,7 +114,7 @@ import {
   AddComponentConfigTemplate, // 新增模板
   getComponentBaseConfigTemplateList, // 配置模板列表
   BaseTypeList, // 基础项列表
-  getComponentConfigTemplateDetail, // 配置项模板详情
+  getComponentConfigTemplateDetailByConfigId, // 配置项模板详情
   updateComponentConfigTemplate, // 更新配置项模板
   delComponentConfigTemplate // 删除配置项模板
 } from "@/api/baseCompo";
@@ -195,12 +201,24 @@ export default {
     },
     // 配置项回调函数
     callback(val) {
-      for (let i = 0; i < this.selectData.length; i++) {
-        if (this.selectData[i]._uuid === val._uuid) {
-          this.selectData[i].model = val.model;
-          this.selectData[i].name = val.name;
-          this.selectData[i].key = val.key;
-          this.selectData[i].disabled = val.disabled;
+      let i = 0;
+      if (val._uuid) {
+        for (i = 0; i < this.selectData.length; i++) {
+          if (this.selectData[i]._uuid === val._uuid) {
+            this.selectData[i].model = val.model;
+            this.selectData[i].name = val.name;
+            this.selectData[i].key = val.key;
+            this.selectData[i].disabled = val.disabled;
+          }
+        }
+      } else {
+        for (i = 0; i < this.selectData.length; i++) {
+          if (this.selectData[i].id === val.id) {
+            this.selectData[i].model = val.model;
+            this.selectData[i].name = val.name;
+            this.selectData[i].key = val.key;
+            this.selectData[i].disabled = val.disabled;
+          }
         }
       }
     },
@@ -227,7 +245,7 @@ export default {
     },
     handleEdit(index, row) {
       //模板详情
-      getComponentConfigTemplateDetail(row.id).then(resp => {
+      getComponentConfigTemplateDetailByConfigId(row.id).then(resp => {
         this.option.key = resp.data.msg.key;
         this.option.id = row.id;
         this.option.name = resp.data.msg.name;

@@ -83,7 +83,20 @@ module.exports = {
     ],
     module: {
       // unknownContextRegExp: /^.\/.*$/,
-      unknownContextCritical: false
+      unknownContextCritical: false,
+      rules: [
+        // {
+        //   test: /\.vue$/,
+        //   loader: "vue-loader"
+        // },
+        // {
+        //   test: /\.css$/,
+        //   use: [
+        //     "style-loader",
+        //     "css-loader"
+        //   ]
+        // }
+      ]
     }
   },
   chainWebpack: config => {
