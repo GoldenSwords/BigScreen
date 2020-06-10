@@ -1,0 +1,107 @@
+{
+  "id": "1728791",
+  "name": "no name",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "9867195",
+      "name": "标记",
+      "font_class": "biaoji",
+      "unicode": "e62e",
+      "unicode_decimal": 58926
+    },
+    {
+      "icon_id": "11434131",
+      "name": "地雷",
+      "font_class": "dilei",
+      "unicode": "e67f",
+      "unicode_decimal": 59007
+    },
+    {
+      "icon_id": "9871887",
+      "name": "柱状图",
+      "font_class": "zhuzhuangtu",
+      "unicode": "eaad",
+      "unicode_decimal": 60077
+    },
+    {
+      "icon_id": "9902237",
+      "name": "柱状图",
+      "font_class": "chart3",
+      "unicode": "e74f",
+      "unicode_decimal": 59215
+    },
+    {
+      "icon_id": "985030",
+      "name": "框",
+      "font_class": "02",
+      "unicode": "e64e",
+      "unicode_decimal": 58958
+    },
+    {
+      "icon_id": "3378196",
+      "name": "散点图",
+      "font_class": "sandiantu",
+      "unicode": "e6d8",
+      "unicode_decimal": 59096
+    },
+    {
+      "icon_id": "12572057",
+      "name": "列表",
+      "font_class": "liebiao",
+      "unicode": "e718",
+      "unicode_decimal": 59160
+    },
+    {
+      "icon_id": "13426813",
+      "name": "云图",
+      "font_class": "yuntu",
+      "unicode": "e68d",
+      "unicode_decimal": 59021
+    },
+    {
+      "icon_id": "5603367",
+      "name": "撤销",
+      "font_class": "chexiao1",
+      "unicode": "e6f6",
+      "unicode_decimal": 59126
+    },
+    {
+      "icon_id": "7998422",
+      "name": "清空",
+      "font_class": "qingkong",
+      "unicode": "e65c",
+      "unicode_decimal": 58972
+    },
+    {
+      "icon_id": "13635731",
+      "name": "确认",
+      "font_class": "queren",
+      "unicode": "e663",
+      "unicode_decimal": 58979
+    },
+    {
+      "icon_id": "778852",
+      "name": "关闭",
+      "font_class": "guanbi",
+      "unicode": "e618",
+      "unicode_decimal": 58904
+    },
+    {
+      "icon_id": "1649166",
+      "name": "最小化",
+      "font_class": "zuixiaohua",
+      "unicode": "e67b",
+      "unicode_decimal": 59003
+    },
+    {
+      "icon_id": "9791984",
+      "name": "放大",
+      "font_class": "fangda",
+      "unicode": "e699",
+      "unicode_decimal": 59033
+    }
+  ]
+}
